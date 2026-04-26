@@ -69,10 +69,10 @@ export default function PostDetailsPage() {
       try {
         await navigator.share({ title: 'TalentHive Post', url: data.shareLink });
       } catch {
-        await navigator.clipboard.writeText(data.shareLink);
+        await navigator.clipboard?.writeText(data.shareLink);
       }
     } else {
-      await navigator.clipboard.writeText(data.shareLink);
+      await navigator.clipboard?.writeText(data.shareLink);
     }
 
     setBanner(t('postShareReadyBanner'));

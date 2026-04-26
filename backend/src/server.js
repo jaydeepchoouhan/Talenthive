@@ -10,10 +10,17 @@ dotenv.config();
 const PORT = process.env.PORT || 5000;
 let mongoMemoryServer = null;
 
+function getAllowedOrigins() {
+  return (process.env.CLIENT_URL || 'http://localhost:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+}
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: getAllowedOrigins(),
     credentials: true
   }
 });

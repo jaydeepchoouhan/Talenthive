@@ -1,4 +1,5 @@
 const fs = require('fs');
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const { generateNumericCode } = require('../utils/password');
 const { uploadSingleMedia } = require('../utils/media');
@@ -11,6 +12,10 @@ const {
 const { sendFrenchLanguageOtp } = require('../services/email.service');
 
 const SUPPORTED_LANGUAGES = ['en', 'es', 'hi', 'pt', 'zh', 'fr'];
+
+function isValidObjectId(value) {
+  return mongoose.Types.ObjectId.isValid(value);
+}
 
 function cleanText(value) {
   return String(value || '')
@@ -93,15 +98,18 @@ function buildResumePayload(user, fields, photoUrl) {
 
 async function listUsers(req, res) {
   const users = await User.find({ _id: { $ne: req.user._id } })
-    .select('-password -resetCode')
+    .select('name email phone language avatar bio friends friendRequestsSent friendRequestsReceived resume')
     .sort({ createdAt: -1 })
-    .limit(30);
+    .limit(30)
+    .lean();
+
+  const currentUserId = req.user._id.toString();
 
   const mapped = users.map((user) => ({
     ...sanitizePublicUser(user),
-    isFriend: user.friends.some((id) => id.toString() === req.user._id.toString()),
-    requestSent: user.friendRequestsReceived.some((id) => id.toString() === req.user._id.toString()),
-    requestReceived: user.friendRequestsSent.some((id) => id.toString() === req.user._id.toString())
+    isFriend: user.friends.some((id) => id.toString() === currentUserId),
+    requestSent: user.friendRequestsReceived.some((id) => id.toString() === currentUserId),
+    requestReceived: user.friendRequestsSent.some((id) => id.toString() === currentUserId)
   }));
 
   return res.json({ users: mapped });
@@ -109,6 +117,10 @@ async function listUsers(req, res) {
 
 async function sendFriendRequest(req, res) {
   const { targetUserId } = req.params;
+
+  if (!isValidObjectId(targetUserId)) {
+    return res.status(404).json({ message: 'Target user not found' });
+  }
 
   if (targetUserId === req.user._id.toString()) {
     return res.status(400).json({ message: 'You cannot send a friend request to yourself' });
@@ -143,6 +155,10 @@ async function sendFriendRequest(req, res) {
 
 async function acceptFriendRequest(req, res) {
   const { requesterId } = req.params;
+
+  if (!isValidObjectId(requesterId)) {
+    return res.status(404).json({ message: 'Requester not found' });
+  }
 
   const currentUser = await User.findById(req.user._id);
   const requester = await User.findById(requesterId);

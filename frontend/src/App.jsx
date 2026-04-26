@@ -9,7 +9,16 @@ import ProfilePage from './pages/ProfilePage';
 import { useAuth } from './context/AuthContext';
 
 function ProtectedRoute({ children }) {
-  const { token } = useAuth();
+  const { token, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-sm text-slate-300">
+        Loading...
+      </div>
+    );
+  }
+
   return token ? children : <Navigate to="/login" replace />;
 }
 

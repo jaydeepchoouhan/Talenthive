@@ -23,14 +23,18 @@ export default function FeedPage() {
   const [banner, setBanner] = useState('');
 
   async function loadAll() {
-    const [postsRes, usersRes, statusRes] = await Promise.all([
-      api.get('/posts'),
-      api.get('/users'),
-      api.get('/posts/posting-status')
-    ]);
-    setPosts(postsRes.data.posts);
-    setUsers(usersRes.data.users);
-    setPostingStatus(statusRes.data);
+    try {
+      const [postsRes, usersRes, statusRes] = await Promise.all([
+        api.get('/posts'),
+        api.get('/users'),
+        api.get('/posts/posting-status')
+      ]);
+      setPosts(postsRes.data.posts);
+      setUsers(usersRes.data.users);
+      setPostingStatus(statusRes.data);
+    } catch (error) {
+      setBanner(translateMessage(error.response?.data?.message || 'Unable to load feed.'));
+    }
   }
 
   useEffect(() => {
@@ -43,7 +47,9 @@ export default function FeedPage() {
     socket.emit('join-user-room', user._id);
 
     socket.on('new-post', (incomingPost) => {
-      setPosts((current) => [incomingPost, ...current]);
+      setPosts((current) =>
+        current.some((post) => post._id === incomingPost._id) ? current : [incomingPost, ...current]
+      );
       setBanner(t('postNewArrivalBanner'));
     });
 
@@ -104,10 +110,10 @@ export default function FeedPage() {
       try {
         await navigator.share({ title: 'TalentHive Post', url: data.shareLink });
       } catch {
-        await navigator.clipboard.writeText(data.shareLink);
+        await navigator.clipboard?.writeText(data.shareLink);
       }
     } else {
-      await navigator.clipboard.writeText(data.shareLink);
+      await navigator.clipboard?.writeText(data.shareLink);
     }
     setPosts((current) => current.map((post) => (post._id === postId ? { ...post, sharesCount: data.sharesCount } : post)));
   }
