@@ -174,30 +174,32 @@ export default function FeedPage() {
   const sortedPosts = useMemo(() => posts, [posts]);
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,_#020617,_#0f172a)]">
+    <div className="min-h-screen bg-[linear-gradient(180deg,_#030712,_#111827_52%,_#031b2f)]">
       <Navbar postingStatus={postingStatus} />
 
-      <div className="mx-auto max-w-7xl px-4 py-6 lg:px-6">
+      <div className="mx-auto max-w-7xl px-4 py-5 lg:px-6">
         {banner && <div className="mb-4 rounded-2xl border border-blue-400/20 bg-blue-500/10 px-4 py-3 text-sm text-blue-200">{banner}</div>}
 
-        <div className="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)_320px]">
-          <div className="space-y-4">
-            <ResumeBuilderCard user={user} onSave={saveResume} />
-            <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
-              <h2 className="text-lg font-semibold text-white">{t('postingRulesTitle')}</h2>
-              <ul className="space-y-3 text-sm text-slate-300">
-                <li>{t('postingRuleOne')}</li>
-                <li>{t('postingRuleTwo')}</li>
-                <li>{t('postingRuleUnlimited')}</li>
-              </ul>
-              <div className="rounded-2xl bg-slate-900/60 p-4 text-sm text-slate-300">
-                {t('postingTodayUsed', { count: postingStatus?.postsToday ?? 0 })}
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+          <main className="space-y-5">
+            <CreatePostCard postingStatus={postingStatus} onSubmit={createPost} />
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-blue-400/15 bg-blue-500/10 px-4 py-3">
+                <p className="text-xs uppercase tracking-[0.2em] text-blue-200/70">Posts today</p>
+                <p className="mt-1 text-2xl font-semibold text-white">{postingStatus?.postsToday ?? 0}</p>
+              </div>
+              <div className="rounded-2xl border border-emerald-400/15 bg-emerald-500/10 px-4 py-3">
+                <p className="text-xs uppercase tracking-[0.2em] text-emerald-200/70">Friends</p>
+                <p className="mt-1 text-2xl font-semibold text-white">{postingStatus?.friends ?? user?.friendCount ?? 0}</p>
+              </div>
+              <div className="rounded-2xl border border-cyan-400/15 bg-cyan-500/10 px-4 py-3">
+                <p className="text-xs uppercase tracking-[0.2em] text-cyan-200/70">Capacity</p>
+                <p className="mt-1 text-lg font-semibold text-white">
+                  {postingStatus?.unlimited ? 'Unlimited' : `${postingStatus?.remaining ?? 0} left`}
+                </p>
               </div>
             </div>
-          </div>
 
-          <div className="space-y-6">
-            <CreatePostCard postingStatus={postingStatus} onSubmit={createPost} />
             {sortedPosts.map((post) => (
               <PostCard
                 key={post._id}
@@ -208,12 +210,24 @@ export default function FeedPage() {
                 onShare={share}
               />
             ))}
-          </div>
+          </main>
 
-          <div className="space-y-6">
+          <aside className="space-y-5 lg:sticky lg:top-28 lg:self-start">
+            <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+              <h2 className="text-lg font-semibold text-white">{t('postingRulesTitle')}</h2>
+              <ul className="mt-4 space-y-3 text-sm text-slate-300">
+                <li>{t('postingRuleOne')}</li>
+                <li>{t('postingRuleTwo')}</li>
+                <li>{t('postingRuleUnlimited')}</li>
+              </ul>
+              <div className="mt-4 rounded-2xl bg-slate-950/70 p-4 text-sm text-slate-300">
+                {t('postingTodayUsed', { count: postingStatus?.postsToday ?? 0 })}
+              </div>
+            </div>
+            <ResumeBuilderCard user={user} onSave={saveResume} />
             <InternshipApplicationsCard user={user} onApply={applyForInternship} />
             <PeopleSidebar users={users} onAddFriend={sendFriendRequest} onAccept={acceptFriend} />
-          </div>
+          </aside>
         </div>
       </div>
     </div>
