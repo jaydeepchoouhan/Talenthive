@@ -29,6 +29,14 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
 
+app.get('/', (_req, res) => {
+  res.json({
+    ok: true,
+    service: 'TalentHive API',
+    message: 'Backend is running. Use /api/health for health checks.'
+  });
+});
+
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, message: 'Server is running' });
 });
